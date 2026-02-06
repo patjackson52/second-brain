@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily summary timer (07:30 Pacific)
+
+[Timer]
+OnCalendar=*-*-* 07:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

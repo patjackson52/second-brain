@@ -1,0 +1,14 @@
+// Syncthing ignore patterns for Second Brain vault
+// Editor and OS metadata
+.obsidian
+.DS_Store
+Thumbs.db
+
+// Temporary files from atomic writes
+*.tmp
+.*.tmp
+
+// Git (vault is not git-managed in production)
+.git
+.gitkeep_dirs
+
