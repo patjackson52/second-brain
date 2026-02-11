@@ -16,7 +16,7 @@ set -euo pipefail
 # Idempotent — safe to run multiple times.
 # ==============================================================================
 
-VAULT_DIR="${VAULT_DIR:-/srv/workspace/second-brain}"
+VAULT_DIR="${VAULT_DIR:-/home/ubuntu/second-brain}"
 LOCK_DIR="/srv/locks"
 SCRIPTS_DIR="/srv/scripts"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -154,8 +154,12 @@ for cmd in "${COMMANDS[@]}"; do
     echo "  WARNING: $src not found, skipping."
     continue
   fi
-  cp "$src" "$COMMANDS_DIR/$cmd"
-  echo "  Copied .claude/commands/$cmd -> $COMMANDS_DIR/$cmd"
+  if [[ "$(realpath "$src")" == "$(realpath "$COMMANDS_DIR/$cmd" 2>/dev/null)" ]]; then
+    echo "  Skipped .claude/commands/$cmd (source and destination are the same file)"
+  else
+    cp "$src" "$COMMANDS_DIR/$cmd"
+    echo "  Copied .claude/commands/$cmd -> $COMMANDS_DIR/$cmd"
+  fi
 done
 
 echo "  Done."
@@ -172,13 +176,13 @@ SYSTEMD_SRC="$REPO_DIR/systemd"
 if [[ ! -d "$SYSTEMD_SRC" ]]; then
   echo "  WARNING: $SYSTEMD_SRC directory not found, skipping systemd deployment."
 else
-  # Copy all .service and .timer files
+  # Copy all .service and .timer files, replacing {{VAULT_DIR}} placeholder
   for unit in "$SYSTEMD_SRC"/*.service "$SYSTEMD_SRC"/*.timer; do
     if [[ ! -f "$unit" ]]; then
       continue
     fi
-    cp "$unit" /etc/systemd/system/
-    echo "  Copied $(basename "$unit") -> /etc/systemd/system/"
+    sed "s|{{VAULT_DIR}}|${VAULT_DIR}|g" "$unit" > "/etc/systemd/system/$(basename "$unit")"
+    echo "  Deployed $(basename "$unit") -> /etc/systemd/system/ (VAULT_DIR=$VAULT_DIR)"
   done
 
   echo "  Reloading systemd daemon..."

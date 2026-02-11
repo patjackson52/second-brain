@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=/srv/workspace/second-brain
+WorkingDirectory={{VAULT_DIR}}
 ExecStart=/srv/scripts/weekly-summary.sh
-Environment=VAULT_DIR=/srv/workspace/second-brain
+Environment=VAULT_DIR={{VAULT_DIR}}
 Environment=CLAUDE_LOCK_FILE=/srv/locks/claude-exec.lock

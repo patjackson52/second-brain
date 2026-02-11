@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=forking
-WorkingDirectory=/srv/workspace/second-brain
+WorkingDirectory={{VAULT_DIR}}
 Environment=CLAUDE_LOCK_FILE=/srv/locks/claude-exec.lock
 ExecStart=/usr/bin/tmux new-session -d -s happy '/usr/bin/happy session --interactive'
 ExecStop=/usr/bin/tmux kill-session -t happy
