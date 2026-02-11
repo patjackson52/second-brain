@@ -4,7 +4,7 @@ Generate a daily summary for the second-brain vault.
 
 1. Get today's date by running: `date +%Y-%m-%d`
 
-2. Check if `archive/daily/auto/daily-summary-<today>.md` already exists.
+2. Check if `_system/summaries/daily/auto/daily-summary-<today>.md` already exists.
    - If it exists, inform the user and ask if they want to overwrite it.
 
 3. Read through the vault to understand what changed today:
@@ -12,7 +12,7 @@ Generate a daily summary for the second-brain vault.
    - Review any notes created or updated today
    - Look at active projects for status
 
-4. Generate a daily summary file at `archive/daily/auto/daily-summary-<today>.md` with this structure:
+4. Generate a daily summary file at `_system/summaries/daily/auto/daily-summary-<today>.md` with this structure:
 
 ```
 ---

@@ -38,30 +38,31 @@ graph TB
 ```mermaid
 flowchart TD
     User([User]) -->|"/note content"| Note["/note command"]
-    Note -->|"creates file"| Inbox["inbox/"]
-    Inbox -->|"/triage"| Classify{"Confidence<br/>above 0.6?"}
-    Classify -->|"Yes - auto-file"| Route["Route to bucket"]
+    Note -->|"creates file"| Inbox["0_inbox/"]
+    Inbox -->|"/triage"| Classify{"Confidence<br/>above 0.7?"}
+    Classify -->|"Yes - auto-file"| Route["PARA Decision Tree"]
     Classify -->|"No - ask user"| Confirm([User Confirms])
     Confirm --> Route
 
-    Route --> Ideas["ideas/"]
-    Route --> Projects["projects/"]
-    Route --> People["people/"]
-    Route --> Admin["admin/"]
+    Route --> Projects["1_projects/active/"]
+    Route --> Areas["2_areas/"]
+    Route --> Resources["3_resources/"]
+    Route --> Archive["4_archive/"]
+    Route --> People["5_people/"]
 
     DailyTimer["daily.timer<br/>07:30 Pacific"] -->|"flock"| Lock{"Lock<br/>available?"}
     WeeklyTimer["weekly.timer<br/>Sun 08:00"] -->|"flock"| Lock
     Lock -->|"Yes"| Generate["Claude generates<br/>summary"]
     Lock -->|"No"| Skip["Skip + notify"]
-    Generate -->|"atomic write"| DailyAuto["archive/daily/auto/"]
-    Generate -->|"atomic write"| WeeklyAuto["archive/weekly/auto/"]
+    Generate -->|"atomic write"| DailyAuto["_system/summaries/daily/auto/"]
+    Generate -->|"atomic write"| WeeklyAuto["_system/summaries/weekly/auto/"]
 
     Query([User]) -->|"/search query"| Search["/search command"]
     Search -.->|"searches"| Inbox
-    Search -.->|"searches"| Ideas
     Search -.->|"searches"| Projects
+    Search -.->|"searches"| Areas
+    Search -.->|"searches"| Resources
     Search -.->|"searches"| People
-    Search -.->|"searches"| Admin
     Search -.->|"searches"| DailyAuto
     Search -.->|"searches"| WeeklyAuto
 ```
@@ -93,7 +94,7 @@ sequenceDiagram
     L-->>A: Lock acquired
     activate A
     A->>A: Generate summary
-    A->>A: Atomic write to archive/
+    A->>A: Atomic write to _system/summaries/
     A->>A: happy notify "Success"
     A->>L: Release lock
     deactivate A
@@ -103,15 +104,18 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    Root["second-brain/"] --> Inbox["inbox/<br/><i>unprocessed capture</i>"]
-    Root --> Ideas["ideas/<br/><i>concepts & thinking</i>"]
-    Root --> Projects["projects/<br/><i>execution & outcomes</i>"]
-    Root --> People["people/<br/><i>relationship memory</i>"]
-    Root --> Admin["admin/<br/><i>ops & logistics</i>"]
-    Root --> Archive["archive/"]
+    Root["second-brain/"] --> Inbox["0_inbox/<br/><i>unprocessed capture</i>"]
+    Root --> Projects["1_projects/<br/><i>active, waiting, archived</i>"]
+    Root --> Areas["2_areas/<br/><i>ongoing responsibilities</i>"]
+    Root --> Resources["3_resources/<br/><i>reference & knowledge</i>"]
+    Root --> Archive["4_archive/<br/><i>completed items</i>"]
+    Root --> People["5_people/<br/><i>relationship memory</i>"]
+    Root --> Assets["_assets/<br/><i>images, audio, pdf</i>"]
+    Root --> System["_system/<br/><i>config & automation</i>"]
 
-    Archive --> Daily["daily/"]
-    Archive --> Weekly["weekly/"]
+    System --> Summaries["summaries/"]
+    Summaries --> Daily["daily/"]
+    Summaries --> Weekly["weekly/"]
     Daily --> DA["auto/<br/><i>automation output</i>"]
     Daily --> DM["manual/<br/><i>human reflections</i>"]
     Weekly --> WA["auto/<br/><i>automation output</i>"]

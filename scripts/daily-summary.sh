@@ -6,7 +6,7 @@ set -euo pipefail
 VAULT_DIR="${VAULT_DIR:-/srv/workspace/second-brain}"
 LOCK_FILE="${LOCK_FILE:-/srv/locks/claude-exec.lock}"
 TODAY="$(date +%Y-%m-%d)"
-OUTPUT_FILE="${VAULT_DIR}/archive/daily/auto/daily-summary-${TODAY}.md"
+OUTPUT_FILE="${VAULT_DIR}/_system/summaries/daily/auto/daily-summary-${TODAY}.md"
 TEMP_FILE="${OUTPUT_FILE}.tmp"
 
 # Error trap: clean up temp file and notify on failure.

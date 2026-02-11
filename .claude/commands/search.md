@@ -4,7 +4,7 @@ Full-text search across the entire second-brain knowledge base.
 
 Search for: `$ARGUMENTS`
 
-1. Search across ALL directories: `inbox/`, `ideas/`, `projects/`, `people/`, `admin/`, `archive/`
+1. Search across ALL directories: `0_inbox/`, `1_projects/`, `2_areas/`, `3_resources/`, `4_archive/`, `5_people/`, `_system/summaries/`
 2. Search within:
    - File contents (body text)
    - Filenames

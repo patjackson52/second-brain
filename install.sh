@@ -64,15 +64,30 @@ echo ""
 echo "--- [2/6] Vault Directory Structure ---"
 
 VAULT_DIRS=(
-  "inbox"
-  "ideas"
-  "projects"
-  "people"
-  "admin"
-  "archive/daily/auto"
-  "archive/daily/manual"
-  "archive/weekly/auto"
-  "archive/weekly/manual"
+  "0_inbox"
+  "1_projects/active"
+  "1_projects/waiting"
+  "1_projects/archived"
+  "2_areas"
+  "3_resources"
+  "4_archive/projects"
+  "4_archive/areas"
+  "4_archive/resources"
+  "4_archive/inbox"
+  "5_people/family"
+  "5_people/work"
+  "5_people/community"
+  "5_people/vendors"
+  "_assets/images"
+  "_assets/audio"
+  "_assets/video"
+  "_assets/pdf"
+  "_assets/other"
+  "_system/prompts"
+  "_system/summaries/daily/auto"
+  "_system/summaries/daily/manual"
+  "_system/summaries/weekly/auto"
+  "_system/summaries/weekly/manual"
 )
 
 for dir in "${VAULT_DIRS[@]}"; do
@@ -129,6 +144,8 @@ COMMANDS=(
   "note.md"
   "triage.md"
   "search.md"
+  "daily.md"
+  "weekly.md"
 )
 
 for cmd in "${COMMANDS[@]}"; do

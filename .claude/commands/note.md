@@ -9,7 +9,7 @@ Create a new note in the inbox from the user's input.
    - Format: `YYYY-MM-DD-HHMM-<slug>.md` (e.g., `2026-01-22-1534-quick-thought.md`)
    - Slug: lowercase, hyphens, max 5 words from the content
 
-3. Create the file in `inbox/` with this structure:
+3. Create the file in `0_inbox/` with this structure:
 
 ```
 ---

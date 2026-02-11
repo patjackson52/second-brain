@@ -5,7 +5,7 @@ set -euo pipefail
 VAULT_DIR="${VAULT_DIR:-/srv/workspace/second-brain}"
 LOCK_FILE="${LOCK_FILE:-/srv/locks/claude-exec.lock}"
 WEEK="$(date +%Y-W%V)"
-OUTPUT_FILE="${VAULT_DIR}/archive/weekly/auto/weekly-summary-${WEEK}.md"
+OUTPUT_FILE="${VAULT_DIR}/_system/summaries/weekly/auto/weekly-summary-${WEEK}.md"
 TEMP_FILE="${OUTPUT_FILE}.tmp"
 
 # --- Error trap: clean up temp file and notify on failure ---
@@ -34,7 +34,7 @@ mkdir -p "$(dirname "$OUTPUT_FILE")"
 # --- Generate summary using Claude ---
 claude --continue --print \
     "Read the vault at ${VAULT_DIR} and review the past week's changes. \
-Look at daily summaries from the past week (in archive/daily/auto/) for context. \
+Look at daily summaries from the past week (in _system/summaries/daily/auto/) for context. \
 Generate a weekly summary in markdown with the following frontmatter and sections:
 
 ---
