@@ -50,6 +50,7 @@ mkdir -p "$VAULT_DIR"
 
 echo "  Creating lock directory: $LOCK_DIR"
 mkdir -p "$LOCK_DIR"
+chmod 777 "$LOCK_DIR"
 
 echo "  Creating scripts directory: $SCRIPTS_DIR"
 mkdir -p "$SCRIPTS_DIR"
@@ -112,6 +113,8 @@ SCRIPTS=(
   "claude-lock.sh"
   "daily-summary.sh"
   "weekly-summary.sh"
+  "inbox-watcher.sh"
+  "inbox-triage.sh"
   "setup-tailscale.sh"
 )
 
@@ -197,6 +200,9 @@ else
 
   systemctl enable --now happy-automation-weekly.timer
   echo "    happy-automation-weekly.timer: enabled + started"
+
+  systemctl enable --now happy-inbox-watcher.service
+  echo "    happy-inbox-watcher.service: enabled + started"
 fi
 
 echo "  Done."
@@ -214,7 +220,7 @@ echo "    $(timedatectl show --property=Timezone --value 2>/dev/null || timedate
 echo ""
 
 echo "  Systemd units:"
-for unit in happy-interactive.service happy-automation-daily.timer happy-automation-weekly.timer; do
+for unit in happy-interactive.service happy-automation-daily.timer happy-automation-weekly.timer happy-inbox-watcher.service; do
   status=$(systemctl is-active "$unit" 2>/dev/null || echo "not found")
   echo "    $unit: $status"
 done
@@ -260,6 +266,7 @@ echo ""
 echo "  Systemd units: happy-interactive.service"
 echo "                  happy-automation-daily.timer"
 echo "                  happy-automation-weekly.timer"
+echo "                  happy-inbox-watcher.service"
 echo ""
 echo "=============================================="
 echo " Deployment complete."
