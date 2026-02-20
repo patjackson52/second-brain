@@ -42,4 +42,7 @@ class TestTriageInbox:
 
         with triage_agent.override(model=TestModel()):
             result = await triage_inbox([note], vault_dir=tmp_vault)
-            assert isinstance(result, TriageBatch)
+            assert isinstance(result.output, TriageBatch)
+            # Verify usage data is accessible
+            usage = result.usage()
+            assert usage.input_tokens is not None

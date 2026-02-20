@@ -120,20 +120,25 @@ async def _run(files: List[Path], vault_dir: Path) -> int:
 
     start_time = time.monotonic()
     try:
-        batch = await triage_inbox(files, vault_dir=vault_dir)
+        result = await triage_inbox(files, vault_dir=vault_dir)
         duration_ms = int((time.monotonic() - start_time) * 1000)
 
+        batch = result.output
         stats = execute_decisions(batch, vault_dir)
 
-        # Log completion (token counts from result not available via triage_inbox,
-        # will be enhanced when we wire up result.usage() directly)
+        # Extract token usage from the agent result
+        usage = result.usage()
+        tokens_in = usage.input_tokens or 0
+        tokens_out = usage.output_tokens or 0
+        cost_usd = (tokens_in * INPUT_PRICE) + (tokens_out * OUTPUT_PRICE)
+
         log_run_complete(
             conn,
             run_id=run_id,
             output_summary=batch.model_dump_json(),
-            tokens_in=0,  # TODO: wire up from result.usage()
-            tokens_out=0,
-            cost_usd=0.0,
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            cost_usd=cost_usd,
             duration_ms=duration_ms,
         )
         conn.close()

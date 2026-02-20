@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from config.agent_config import VAULT_DIR
 from models.triage import TriageBatch
+
+if TYPE_CHECKING:
+    from pydantic_ai.run import AgentRunResult
 
 MAX_FILE_CONTENT = 3072  # 3KB per file
 
@@ -43,8 +46,10 @@ def _has_dbos() -> bool:
 async def triage_inbox(
     files: list[Path],
     vault_dir: Optional[Path] = None,
-) -> TriageBatch:
-    """Run the triage agent on a list of inbox files. Returns decisions only.
+) -> "AgentRunResult[TriageBatch]":
+    """Run the triage agent on a list of inbox files.
+
+    Returns the full RunResult so callers can access .output, .usage(), etc.
 
     Uses DBOS for durable execution when available (Python 3.11+).
     Falls back to direct agent call on older Python versions.
@@ -71,4 +76,4 @@ async def triage_inbox(
     else:
         result = await triage_agent.run(prompt)
 
-    return result.output
+    return result

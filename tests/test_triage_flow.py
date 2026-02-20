@@ -127,8 +127,8 @@ class TestFullTriageFlow:
         note.write_text("# Test note\n\nSome content for triage.")
 
         with triage_agent.override(model=TestModel()):
-            batch = await triage_inbox([note], vault_dir=tmp_vault)
-            assert isinstance(batch, TriageBatch)
+            result = await triage_inbox([note], vault_dir=tmp_vault)
+            assert isinstance(result.output, TriageBatch)
 
     def test_find_inbox_files_integration(self, tmp_vault):
         """find_inbox_files returns correct files from a realistic vault."""
