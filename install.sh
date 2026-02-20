@@ -40,7 +40,7 @@ echo ""
 # 1. System Configuration
 # ==============================================================================
 
-echo "--- [1/6] System Configuration ---"
+echo "--- [1/7] System Configuration ---"
 
 echo "  Setting timezone to America/Los_Angeles..."
 timedatectl set-timezone America/Los_Angeles
@@ -62,7 +62,7 @@ echo ""
 # 2. Vault Directory Structure
 # ==============================================================================
 
-echo "--- [2/6] Vault Directory Structure ---"
+echo "--- [2/7] Vault Directory Structure ---"
 
 VAULT_DIRS=(
   "0_inbox"
@@ -107,7 +107,7 @@ echo ""
 # 3. Deploy Scripts
 # ==============================================================================
 
-echo "--- [3/6] Deploy Scripts ---"
+echo "--- [3/7] Deploy Scripts ---"
 
 SCRIPTS=(
   "claude-lock.sh"
@@ -135,10 +135,48 @@ echo "  Done."
 echo ""
 
 # ==============================================================================
+# 3b. Python Environment Setup
+# ==============================================================================
+
+echo "--- [3b/7] Python Environment Setup ---"
+
+STATE_DIR="/home/ubuntu/second-brain-state"
+
+# Create virtual environment if it doesn't exist
+if [[ ! -d "${VAULT_DIR}/.venv" ]]; then
+    echo "  Creating Python virtual environment..."
+    python3 -m venv "${VAULT_DIR}/.venv"
+else
+    echo "  Virtual environment already exists."
+fi
+
+# Upgrade pip and install/upgrade dependencies
+echo "  Installing Python dependencies..."
+"${VAULT_DIR}/.venv/bin/pip" install --quiet --upgrade pip
+"${VAULT_DIR}/.venv/bin/pip" install --quiet -e "${VAULT_DIR}"
+
+# Create state directory
+echo "  Creating state directory: $STATE_DIR"
+mkdir -p "$STATE_DIR"
+
+# Initialize database schema
+echo "  Initializing agents.db schema..."
+"${VAULT_DIR}/.venv/bin/python3" -c "
+from state.db import get_connection, init_schema
+conn = get_connection()
+init_schema(conn)
+conn.close()
+print('    Schema initialized successfully.')
+"
+
+echo "  Done."
+echo ""
+
+# ==============================================================================
 # 4. Deploy Claude Code Slash Commands
 # ==============================================================================
 
-echo "--- [4/6] Deploy Claude Code Slash Commands ---"
+echo "--- [4/7] Deploy Claude Code Slash Commands ---"
 
 COMMANDS_DIR="$VAULT_DIR/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
@@ -172,7 +210,7 @@ echo ""
 # 5. Deploy Systemd Units
 # ==============================================================================
 
-echo "--- [5/6] Deploy Systemd Units ---"
+echo "--- [5/7] Deploy Systemd Units ---"
 
 SYSTEMD_SRC="$REPO_DIR/systemd"
 
@@ -212,7 +250,7 @@ echo ""
 # 6. Verification
 # ==============================================================================
 
-echo "--- [6/6] Verification ---"
+echo "--- [6/7] Verification ---"
 echo ""
 
 echo "  Timezone:"
@@ -224,6 +262,23 @@ for unit in happy-interactive.service happy-automation-daily.timer happy-automat
   status=$(systemctl is-active "$unit" 2>/dev/null || echo "not found")
   echo "    $unit: $status"
 done
+echo ""
+
+echo "  Python environment:"
+if [[ -f "${VAULT_DIR}/.venv/bin/python3" ]]; then
+  echo "    .venv — OK"
+  echo "    Python: $("${VAULT_DIR}/.venv/bin/python3" --version)"
+else
+  echo "    .venv — MISSING"
+fi
+echo ""
+
+echo "  State database:"
+if [[ -f "$STATE_DIR/agents.db" ]]; then
+  echo "    agents.db — OK"
+else
+  echo "    agents.db — MISSING"
+fi
 echo ""
 
 echo "  Lock directory writable:"
