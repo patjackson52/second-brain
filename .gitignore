@@ -5,3 +5,5 @@
 .obsidian/workspace-mobile.json
 oracle-second-brain
 oracle-second-brain.pub
+.worktrees/
+.venv/
