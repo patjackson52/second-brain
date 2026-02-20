@@ -30,14 +30,45 @@ def build_triage_prompt(files: list[Path], vault_dir: Path) -> str:
     )
 
 
+def _has_dbos() -> bool:
+    """Check if DBOS + PydanticAI DBOS integration are both available."""
+    try:
+        from dbos import DBOS  # noqa: F401
+        from pydantic_ai.durable_exec.dbos import DBOSAgent  # noqa: F401
+        return True
+    except (ImportError, ModuleNotFoundError):
+        return False
+
+
 async def triage_inbox(
     files: list[Path],
     vault_dir: Optional[Path] = None,
 ) -> TriageBatch:
-    """Run the triage agent on a list of inbox files. Returns decisions only."""
+    """Run the triage agent on a list of inbox files. Returns decisions only.
+
+    Uses DBOS for durable execution when available (Python 3.11+).
+    Falls back to direct agent call on older Python versions.
+    """
     from agents.triage_agent import triage_agent
 
     vault = vault_dir or VAULT_DIR
     prompt = build_triage_prompt(files, vault)
-    result = await triage_agent.run(prompt)
+
+    if _has_dbos():
+        from dbos import DBOS, DBOSConfig
+        from pydantic_ai.durable_exec.dbos import DBOSAgent
+
+        from config.agent_config import STATE_DB_PATH
+
+        _dbos_config: DBOSConfig = {
+            "name": "second_brain_agents",
+            "system_database_url": f"sqlite:///{STATE_DB_PATH}",
+        }
+        DBOS(config=_dbos_config)
+        DBOS.launch()
+        durable_triage = DBOSAgent(triage_agent)
+        result = await durable_triage.run(prompt)
+    else:
+        result = await triage_agent.run(prompt)
+
     return result.output
