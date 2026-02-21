@@ -292,6 +292,7 @@ else
 
     # Replace all placeholders
     sed -e "s|{{VAULT_DIR}}|${VAULT_DIR}|g" \
+        -e "s|{{DATA_DIR}}|${DATA_DIR}|g" \
         -e "s|{{SCRIPTS_DIR}}|${SCRIPTS_DIR}|g" \
         -e "s|{{LOCK_DIR}}|${LOCK_DIR}|g" \
         -e "s|{{STATE_DIR}}|${STATE_DIR}|g" \

@@ -7,6 +7,7 @@ Wants=network-online.target
 Type=oneshot
 User={{RUN_USER}}
 WorkingDirectory={{VAULT_DIR}}
+EnvironmentFile={{DATA_DIR}}/env
 Environment=HOME={{RUN_HOME}}
 Environment=VAULT_DIR={{VAULT_DIR}}
 Environment=SECOND_BRAIN_VAULT={{VAULT_DIR}}
