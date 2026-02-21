@@ -1,0 +1,25 @@
+[project]
+name = "second-brain-agents"
+version = "0.1.0"
+description = "PydanticAI agents for Second Brain triage and automation"
+requires-python = ">=3.9"
+dependencies = [
+    "pydantic-ai[anthropic]>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["config*", "models*", "agents*", "state*", "tools*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

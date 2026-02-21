@@ -1,0 +1,128 @@
+version: 1
+
+# Top-level folder layout (edit if you want different names)
+folders:
+  inbox: "0_inbox"
+  projects: "1_projects"
+  areas: "2_areas"
+  resources: "3_resources"
+  archive: "4_archive"
+  people: "5_people"
+  assets: "_assets"
+  system: "_system"
+
+# People strategy: "parallel" | "inside_areas" | "resources_people"
+# - parallel: use 5_people/ as a separate axis (recommended baseline)
+# - inside_areas: store people under the relevant Area
+# - resources_people: store people as a resource topic
+people:
+  mode: "parallel"
+  # If mode == parallel, use subfolders to organize people:
+  groups:
+    - "family"
+    - "work"
+    - "community"
+    - "vendors"
+
+# Asset handling
+assets:
+  organize_by: "ym"          # "ym" => YYYY/MM ; "flat" => single folder
+  types:
+    images: ["jpg", "jpeg", "png", "gif", "webp", "heic"]
+    audio: ["m4a", "mp3", "wav", "aac"]
+    video: ["mp4", "mov", "mkv"]
+    pdf: ["pdf"]
+    other: ["*"]
+
+# Standard status values (agents should stick to these)
+status_values: ["raw", "triaged", "active", "waiting", "done", "archived"]
+
+# If triage is uncertain
+uncertainty:
+  # If true: keep in inbox and mark needs_triage
+  # If false: route to best guess but mark needs_review
+  keep_in_inbox_below_confidence: 0.7
+
+# Allowed (suggested) area/resource names. Empty means "free-form allowed".
+# Keeping these populated makes AI routing more consistent.
+areas:
+  allowed:
+    - "Health"
+    - "Family"
+    - "Home"
+    - "Finance"
+    - "Work"
+    - "Learning"
+    - "Community"
+
+resources:
+  allowed:
+    - "Technology"
+    - "Cooking"
+    - "Outdoors"
+    - "Reference"
+    - "Vendors"
+    - "Reading"
+
+# Keyword hints (lightweight heuristics). Use carefully; do not overfit.
+# The agent may use these to raise confidence but must still follow the PARA decision tree.
+hints:
+  project_keywords:
+    - "deadline"
+    - "due"
+    - "ship"
+    - "launch"
+    - "milestone"
+    - "plan"
+    - "proposal"
+    - "deliverable"
+    - "buy"
+    - "build"
+  area_keywords:
+    - "routine"
+    - "maintain"
+    - "ongoing"
+    - "weekly"
+    - "monthly"
+    - "policy"
+    - "responsibility"
+  resource_keywords:
+    - "how to"
+    - "guide"
+    - "reference"
+    - "tips"
+    - "notes"
+    - "recipe"
+    - "spec"
+  archive_keywords:
+    - "completed"
+    - "obsolete"
+    - "deprecated"
+    - "old"
+
+# Naming conventions
+naming:
+  # For new notes created from inbox captures:
+  canonical_note_slug: "title"     # "title" or "timestamp_title"
+  timestamp_format: "%Y-%m-%dT%H%M%S%z"
+  # For captures saved in inbox:
+  inbox_filename: "timestamp__source"  # e.g. 2026-02-10T081500-0800__telegram.md
+
+# Where to place routed items (substructure)
+structure:
+  projects:
+    active: "active"
+    waiting: "waiting"
+    archived: "archived"
+    project_hub_filename: "index.md"
+    project_subfolders: ["notes", "assets"]
+
+  archive:
+    mirror_subfolders: ["projects", "areas", "resources", "inbox"]
+
+# Task extraction policy
+tasks:
+  extract: true
+  # If true, extracted tasks go into a project/area tasks.md when applicable
+  consolidate_to_tasks_file: true
+  tasks_filename: "tasks.md"

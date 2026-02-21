@@ -1,0 +1,15 @@
+[Unit]
+Description=Second Brain Weekly Summary Automation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User={{RUN_USER}}
+WorkingDirectory={{VAULT_DIR}}
+Environment=HOME={{RUN_HOME}}
+Environment=VAULT_DIR={{VAULT_DIR}}
+Environment=SECOND_BRAIN_VAULT={{VAULT_DIR}}
+Environment=SECOND_BRAIN_STATE_DB={{STATE_DIR}}/agents.db
+Environment=CLAUDE_LOCK_FILE={{LOCK_DIR}}/claude-exec.lock
+ExecStart={{SCRIPTS_DIR}}/weekly-summary.sh

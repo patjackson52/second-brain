@@ -1,0 +1,19 @@
+[Unit]
+Description=HappyCoder Interactive Session
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User={{RUN_USER}}
+WorkingDirectory={{VAULT_DIR}}
+Environment=HOME={{RUN_HOME}}
+Environment=CLAUDE_LOCK_FILE={{LOCK_DIR}}/claude-exec.lock
+ExecStart=/usr/bin/tmux new-session -d -s happy '/usr/bin/happy session --interactive'
+ExecStop=/usr/bin/tmux kill-session -t happy
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

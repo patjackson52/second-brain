@@ -1,0 +1,21 @@
+[Unit]
+Description=Second Brain Inbox Watcher (Syncthing Event API)
+After=network-online.target syncthing@{{RUN_USER}}.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{RUN_USER}}
+WorkingDirectory={{VAULT_DIR}}
+Environment=HOME={{RUN_HOME}}
+Environment=VAULT_DIR={{VAULT_DIR}}
+Environment=SECOND_BRAIN_VAULT={{VAULT_DIR}}
+Environment=SECOND_BRAIN_STATE_DB={{STATE_DIR}}/agents.db
+Environment=LOCK_FILE={{LOCK_DIR}}/claude-exec.lock
+Environment=TRIAGE_SCRIPT={{SCRIPTS_DIR}}/inbox-triage.sh
+ExecStart={{SCRIPTS_DIR}}/inbox-watcher.sh
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
