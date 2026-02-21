@@ -41,7 +41,7 @@ exec 9>"$LOCK_FILE"
 if [[ "$MODE" == "--non-blocking" ]]; then
     if ! flock -n 9; then
         echo "Skipped: interactive session active"
-        happy notify "Skipped: interactive session active"
+        happy notify -p "Skipped: interactive session active"
         exit 0
     fi
     # Lock acquired, run the command

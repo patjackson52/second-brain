@@ -12,20 +12,20 @@ TEMP_FILE="${OUTPUT_FILE}.tmp"
 # Error trap: clean up temp file and notify on failure.
 cleanup_on_error() {
     rm -f "$TEMP_FILE"
-    happy notify "Failed: daily summary generation error for ${TODAY}"
+    happy notify -p "Failed: daily summary generation error for ${TODAY}"
 }
 trap cleanup_on_error ERR
 
 # Idempotency check: skip if already generated today.
 if [[ -f "$OUTPUT_FILE" ]]; then
-    happy notify "Skipped: daily summary already exists for ${TODAY}"
+    happy notify -p "Skipped: daily summary already exists for ${TODAY}"
     exit 0
 fi
 
 # Acquire lock (non-blocking). If an interactive session holds it, skip.
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
-    happy notify "Skipped: interactive session active"
+    happy notify -p "Skipped: interactive session active"
     exit 0
 fi
 
@@ -50,7 +50,7 @@ ai_generated: true \
 
 # Validate: ensure temp file exists and is non-empty.
 if [[ ! -s "$TEMP_FILE" ]]; then
-    happy notify "Failed: daily summary output is empty for ${TODAY}"
+    happy notify -p "Failed: daily summary output is empty for ${TODAY}"
     rm -f "$TEMP_FILE"
     exit 1
 fi
@@ -59,4 +59,4 @@ fi
 mv "$TEMP_FILE" "$OUTPUT_FILE"
 
 # Notify success.
-happy notify "Daily summary written for ${TODAY}"
+happy notify -p "Daily summary written for ${TODAY}"

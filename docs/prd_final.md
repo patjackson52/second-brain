@@ -113,29 +113,49 @@ This system is **not** intended to be:
 
 ## 6. Canonical Directory Structure
 
-The system is organized using **five semantic buckets** plus one **archive** directory:
+The system is organized using the **PARA method** with numbered prefixes for sort-order, plus system and asset directories:
 
 ```
-second-brain/
-├── inbox/
-├── ideas/
-├── projects/
-├── people/
-├── admin/
-└── archive/
-    ├── daily/
-    │   ├── auto/
-    │   └── manual/
-    └── weekly/
-        ├── auto/
-        └── manual/
+second-brain-vault/
+├── 0_inbox/
+├── 1_projects/
+│   ├── active/
+│   ├── waiting/
+│   └── archived/
+├── 2_areas/
+├── 3_resources/
+├── 4_archive/
+│   ├── projects/
+│   ├── areas/
+│   ├── resources/
+│   └── inbox/
+├── 5_people/
+│   ├── family/
+│   ├── work/
+│   ├── community/
+│   └── vendors/
+├── _assets/
+│   ├── images/
+│   ├── audio/
+│   ├── video/
+│   ├── pdf/
+│   └── other/
+└── _system/
+    ├── prompts/
+    └── summaries/
+        ├── daily/
+        │   ├── auto/
+        │   └── manual/
+        └── weekly/
+            ├── auto/
+            └── manual/
 ```
 
 ---
 
 ## 7. Directory Semantics
 
-### 7.1 `inbox/` — Unprocessed Capture
+### 7.1 `0_inbox/` — Unprocessed Capture
 
 **Purpose**
 
@@ -144,8 +164,8 @@ second-brain/
 
 **Rules**
 
-- Nothing is created outside `inbox/` by interactive/human captures
-- Automation-generated outputs write directly to `archive/` (see section 11)
+- Nothing is created outside `0_inbox/` by interactive/human captures
+- Automation-generated outputs write directly to `_system/summaries/` (see section 11)
 - Files are expected to move out of inbox
 - Messy is acceptable
 
@@ -162,28 +182,7 @@ ai_generated: false
 
 ---
 
-### 7.2 `ideas/` — Concepts & Thinking
-
-**Purpose**
-
-- Atomic ideas
-- Mental models
-- Insights and hypotheses
-
-**Example metadata**
-
-```yaml
----
-type: idea
-tags: [systems, reliability]
-confidence: 0.82
-ai_generated: false
----
-```
-
----
-
-### 7.3 `projects/` — Execution & Outcomes
+### 7.2 `1_projects/` — Execution & Outcomes
 
 **Purpose**
 
@@ -193,11 +192,14 @@ ai_generated: false
 **Structure**
 
 ```
-projects/
-└── example-project/
-    ├── overview.md
-    ├── tasks.md
-    └── decisions.md
+1_projects/
+├── active/
+│   └── example-project/
+│       ├── overview.md
+│       ├── tasks.md
+│       └── decisions.md
+├── waiting/
+└── archived/
 ```
 
 **Example metadata**
@@ -212,12 +214,78 @@ owner: self
 
 ---
 
-### 7.4 `people/` — Humans as First-Class Entities
+### 7.3 `2_areas/` — Ongoing Responsibilities
+
+**Purpose**
+
+- Areas of ongoing responsibility with no end date
+- Health, finances, career development, home maintenance, etc.
+
+**Example metadata**
+
+```yaml
+---
+type: area
+tags: [health, fitness]
+ai_generated: false
+---
+```
+
+---
+
+### 7.4 `3_resources/` — Reference & Knowledge
+
+**Purpose**
+
+- Reference material and knowledge
+- Atomic ideas, mental models, insights and hypotheses
+- Topics of interest, research, and learning
+
+**Example metadata**
+
+```yaml
+---
+type: resource
+tags: [systems, reliability]
+confidence: 0.82
+ai_generated: false
+---
+```
+
+---
+
+### 7.5 `4_archive/` — Inactive Items
+
+**Purpose**
+
+- Cold storage for items from any other PARA category that are no longer active
+- Partitioned by source category
+
+**Structure**
+
+- `4_archive/projects/` — Completed or abandoned projects
+- `4_archive/areas/` — Areas no longer relevant
+- `4_archive/resources/` — Outdated or superseded resources
+- `4_archive/inbox/` — Discarded inbox items
+
+---
+
+### 7.6 `5_people/` — Humans as First-Class Entities
 
 **Purpose**
 
 - Context and history about people
 - Follow-ups and relationship memory
+
+**Structure**
+
+```
+5_people/
+├── family/
+├── work/
+├── community/
+└── vendors/
+```
 
 **Example metadata**
 
@@ -231,29 +299,37 @@ last_interaction: 2026-01-20
 
 ---
 
-### 7.5 `admin/` — Operational & Meta Notes
+### 7.7 `_assets/` — Binary & Media Files
 
 **Purpose**
 
-- Life administration
-- System notes
-- Processes and logistics
-
----
-
-### 7.6 `archive/` — Automated & Manual Summaries
-
-**Purpose**
-
-- Storage for daily and weekly summaries
-- Partitioned into `auto/` (automation-generated) and `manual/` (human-authored) subdirectories
+- Storage for non-Markdown files (images, audio, video, PDFs, etc.)
+- Keeps binary content out of semantic directories
 
 **Structure**
 
-- `archive/daily/auto/` — Automation-generated daily summaries
-- `archive/daily/manual/` — Human-authored daily reflections
-- `archive/weekly/auto/` — Automation-generated weekly summaries
-- `archive/weekly/manual/` — Human-authored weekly reflections
+- `_assets/images/`
+- `_assets/audio/`
+- `_assets/video/`
+- `_assets/pdf/`
+- `_assets/other/`
+
+---
+
+### 7.8 `_system/` — System Configuration & Summaries
+
+**Purpose**
+
+- Agent prompts and system configuration
+- Storage for daily and weekly summaries (automated and manual)
+
+**Structure**
+
+- `_system/prompts/` — Agent prompt templates
+- `_system/summaries/daily/auto/` — Automation-generated daily summaries
+- `_system/summaries/daily/manual/` — Human-authored daily reflections
+- `_system/summaries/weekly/auto/` — Automation-generated weekly summaries
+- `_system/summaries/weekly/manual/` — Human-authored weekly reflections
 
 ---
 
@@ -264,9 +340,9 @@ last_interaction: 2026-01-20
 ```
 Capture (human / interactive agent)
   ↓
-inbox/
+0_inbox/
   ↓ (AI + human classification via /triage)
-ideas/ | projects/ | people/ | admin/
+1_projects/ | 2_areas/ | 3_resources/ | 4_archive/ | 5_people/
 ```
 
 ### Automation Output
@@ -274,10 +350,10 @@ ideas/ | projects/ | people/ | admin/
 ```
 Scheduled automation run
   ↓
-archive/daily/auto/ or archive/weekly/auto/
+_system/summaries/daily/auto/ or _system/summaries/weekly/auto/
 ```
 
-Automation writes directly to its designated directories. It does not pass through `inbox/`.
+Automation writes directly to its designated directories. It does not pass through `0_inbox/`.
 
 ---
 
@@ -287,7 +363,7 @@ Automation writes directly to its designated directories. It does not pass throu
 
 ```yaml
 ---
-type: unknown | idea | project | person | admin | daily-summary | weekly-summary
+type: unknown | project | area | resource | person | daily-summary | weekly-summary
 captured_at: ISO-8601 timestamp
 ---
 ```
@@ -325,7 +401,7 @@ The canonical agent interface consists of three slash commands, usable on both l
 
 **Behavior**:
 
-1. Creates a new Markdown file in `inbox/`
+1. Creates a new Markdown file in `0_inbox/`
 2. Filename is auto-generated: timestamp-based slug (e.g., `2026-01-22-1534-quick-thought.md`) or derived from content
 3. Adds required frontmatter:
 
@@ -355,13 +431,13 @@ ai_generated: false
 **Behavior**:
 
 - If a specific file path is given, classifies that file
-- If `all` or no argument is provided, processes all files in `inbox/`
+- If `all` or no argument is provided, processes all files in `0_inbox/`
 
 **Classification output** (per file):
 
 | Field | Description |
 |-------|-------------|
-| Target bucket | One of: `ideas`, `projects`, `people`, `admin` |
+| Target bucket | One of: `1_projects/`, `2_areas/`, `3_resources/`, `5_people/` |
 | `type` value | Appropriate type for the target bucket |
 | Suggested tags | List of relevant tags |
 | Confidence score | Float 0.0–1.0 |
@@ -396,7 +472,7 @@ ai_generated: false
 - Returns matching files with relevant context snippets
 - Ordered by relevance
 
-**Scope**: All directories — `inbox/`, `ideas/`, `projects/`, `people/`, `admin/`, `archive/`
+**Scope**: All directories — `0_inbox/`, `1_projects/`, `2_areas/`, `3_resources/`, `4_archive/`, `5_people/`, `_assets/`, `_system/`
 
 ---
 
@@ -414,11 +490,11 @@ ai_generated: false
 
 **Daily Automation**:
 - Schedule: every day at **07:30**
-- Output: `archive/daily/auto/daily-summary-YYYY-MM-DD.md`
+- Output: `_system/summaries/daily/auto/daily-summary-YYYY-MM-DD.md`
 
 **Weekly Automation**:
 - Schedule: Sundays at **08:00**
-- Output: `archive/weekly/auto/weekly-summary-YYYY-Www.md`
+- Output: `_system/summaries/weekly/auto/weekly-summary-YYYY-Www.md`
 
 ### Output Specifications
 
@@ -462,7 +538,7 @@ Sections:
 
 - Claude responses always appear in chat
 - Push notifications are **not guaranteed** for new chat messages alone
-- Automation **MUST explicitly trigger notifications** using `happy notify`
+- Automation **MUST explicitly trigger notifications** using `happy notify -p`
 
 | Outcome | Notification |
 |---------|-------------|
@@ -492,13 +568,13 @@ Sections:
 ### Interactive Agent
 
 - **READ:** entire vault
-- **WRITE:** anywhere **except** `archive/daily/auto/` and `archive/weekly/auto/`
+- **WRITE:** anywhere **except** `_system/summaries/daily/auto/` and `_system/summaries/weekly/auto/`
 - **MUST NOT:** edit or delete automation-generated files
 
 ### Automation Agent
 
 - **READ:** entire vault
-- **WRITE:** only to `archive/daily/auto/` and `archive/weekly/auto/`
+- **WRITE:** only to `_system/summaries/daily/auto/` and `_system/summaries/weekly/auto/`
 - **MUST NOT:** modify or delete any other vault files, or overwrite existing automation files
 
 These rules are enforced by **prompt discipline and scripting**, not filesystem ACLs.
@@ -509,7 +585,7 @@ These rules are enforced by **prompt discipline and scripting**, not filesystem 
 
 ### Execution Lock
 
-- Path: `/srv/locks/claude-exec.lock`
+- Path: `~/.second-brain/locks/claude-exec.lock`
 - Mechanism: `flock`
 
 ### Rules
@@ -551,7 +627,7 @@ Claude Code sessions are not safe for concurrent execution, even with partitione
   - Claude Code access point
   - Automation host (scheduled summaries)
   - HappyCoder relay
-- Vault path: `/srv/workspace/second-brain/`
+- Vault path: `~/second-brain-vault/`
 
 ### Authority Model
 
@@ -697,21 +773,21 @@ Mitigation:
 - HappyCoder authenticated and paired
 - Claude Code authenticated
 - Syncthing configured for entire vault directory
-- Execution lock directory exists: `/srv/locks/`
+- Execution lock directory exists: `~/.second-brain/locks/`
 
 ---
 
 ## 19. Acceptance Criteria
 
 - Interactive agent reads/writes only approved directories
-- Automation writes only to `archive/daily/auto/` and `archive/weekly/auto/`
-- Nothing is created outside `inbox/` by interactive/human captures
+- Automation writes only to `_system/summaries/daily/auto/` and `_system/summaries/weekly/auto/`
+- Nothing is created outside `0_inbox/` by interactive/human captures
 - Automation responses appear in shared chat history
 - Explicit push notifications fire for every automation run
 - No concurrent Claude execution observed over sustained use
-- `/note` creates files in `inbox/` with correct frontmatter
+- `/note` creates files in `0_inbox/` with correct frontmatter
 - `/triage` classifies and routes inbox items with confidence scoring
-- `/search` returns results from all directories including `archive/`
+- `/search` returns results from all directories including `4_archive/` and `_system/`
 - Syncthing replicates vault across all configured devices
 - System recovers gracefully from laptop loss, VM loss, or tool abandonment
 

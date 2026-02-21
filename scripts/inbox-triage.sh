@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
     echo "inbox-triage: skipped (lock held by another session)"
-    happy notify "Inbox triage skipped: session active" 2>/dev/null || true
+    happy notify -p "Inbox triage skipped: session active" 2>/dev/null || true
     exit 0
 fi
 
@@ -37,7 +37,7 @@ if [[ -f "${DATA_DIR}/venv/bin/activate" ]]; then
     source "${DATA_DIR}/venv/bin/activate"
 else
     echo "inbox-triage: ERROR — venv not found at ${DATA_DIR}/venv"
-    happy notify "Inbox triage failed: venv not found" 2>/dev/null || true
+    happy notify -p "Inbox triage failed: venv not found" 2>/dev/null || true
     exit 1
 fi
 
@@ -48,15 +48,15 @@ RESULT=$?
 case $RESULT in
     0)
         echo "inbox-triage: complete"
-        happy notify "Inbox triage: processed $FILE_COUNT file(s)" 2>/dev/null || true
+        happy notify -p "Inbox triage: processed $FILE_COUNT file(s)" 2>/dev/null || true
         ;;
     2)
         echo "inbox-triage: complete (some items need review)"
-        happy notify "Inbox triage: $FILE_COUNT file(s) processed, some need review" 2>/dev/null || true
+        happy notify -p "Inbox triage: $FILE_COUNT file(s) processed, some need review" 2>/dev/null || true
         ;;
     *)
         echo "inbox-triage: failed (exit code $RESULT)"
-        happy notify "Inbox triage failed" 2>/dev/null || true
+        happy notify -p "Inbox triage failed" 2>/dev/null || true
         exit 1
         ;;
 esac

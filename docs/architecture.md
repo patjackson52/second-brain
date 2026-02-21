@@ -23,7 +23,7 @@ graph TB
     Auto -->|"07:30 daily<br/>08:00 Sun weekly"| Claude
     Watcher -->|"on inbox sync"| Claude
 
-    subgraph "Vault (/home/ubuntu/second-brain/)"
+    subgraph "Vault (~/second-brain-vault/)"
         Vault[("Markdown Files")]
     end
 
@@ -82,7 +82,7 @@ sequenceDiagram
     participant API as Syncthing Event API<br/>localhost:8384
     participant W as inbox-watcher.sh
     participant T as inbox-triage.sh
-    participant L as /srv/locks/claude-exec.lock
+    participant L as ~/.second-brain/locks/claude-exec.lock
     participant C as Claude Code
 
     D->>S: New file in 0_inbox/
@@ -91,7 +91,7 @@ sequenceDiagram
 
     W->>API: Long-poll /rest/events<br/>(since=LAST_ID, timeout=60s)
     API-->>W: Events batch (JSON)
-    W->>W: Filter: type==ItemFinished<br/>folder==second-brain<br/>item starts with 0_inbox/<br/>action==update
+    W->>W: Filter: type==ItemFinished<br/>folder==qekfe-h4e7x<br/>item starts with 0_inbox/<br/>action==update
 
     Note over W: Debounce check (10s)
     W->>T: Execute triage script
@@ -103,10 +103,10 @@ sequenceDiagram
         T->>C: claude --print "/triage all"
         C->>C: PARA decision tree<br/>(routes.yaml + triage_para.md)
         C-->>T: Files routed
-        T->>T: happy notify "processed N file(s)"
+        T->>T: happy notify -p "processed N file(s)"
     else Lock held
         L-->>T: FAIL
-        T->>T: happy notify "skipped: session active"
+        T->>T: happy notify -p "skipped: session active"
     end
 ```
 
@@ -115,7 +115,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     Poll["Long-poll<br/>/rest/events"] --> Parse["Parse JSON<br/>(jq)"]
-    Parse --> Filter{"ItemFinished?<br/>folder=second-brain?<br/>0_inbox/*?<br/>action=update?"}
+    Parse --> Filter{"ItemFinished?<br/>folder=qekfe-h4e7x?<br/>0_inbox/*?<br/>action=update?"}
     Filter -->|No| Advance["Advance LAST_ID<br/>continue polling"]
     Filter -->|Yes| Debounce{"Elapsed ><br/>10s?"}
     Debounce -->|No| Skip["Skip<br/>(accumulate)"]
@@ -132,12 +132,12 @@ flowchart LR
 
 | Variable | Default | Source |
 |----------|---------|--------|
-| `VAULT_DIR` | `/home/ubuntu/second-brain` | systemd Environment |
-| `LOCK_FILE` | `/srv/locks/claude-exec.lock` | systemd Environment |
+| `VAULT_DIR` | `~/second-brain-vault` | systemd Environment |
+| `LOCK_FILE` | `~/.second-brain/locks/claude-exec.lock` | systemd Environment |
 | `SYNCTHING_API` | `http://localhost:8384` | script default |
-| `SYNCTHING_FOLDER` | `second-brain` | script default |
+| `SYNCTHING_FOLDER` | `qekfe-h4e7x` | script default |
 | `DEBOUNCE_SECONDS` | `10` | script default |
-| `TRIAGE_SCRIPT` | `/srv/scripts/inbox-triage.sh` | systemd Environment |
+| `TRIAGE_SCRIPT` | `~/.second-brain/scripts/inbox-triage.sh` | systemd Environment |
 | `SYNCTHING_API_KEY` | auto-resolved from config.xml | script resolution |
 
 API key resolution searches (in order):
@@ -150,7 +150,7 @@ API key resolution searches (in order):
 ```mermaid
 sequenceDiagram
     participant I as Interactive Session
-    participant L as /srv/locks/claude-exec.lock
+    participant L as ~/.second-brain/locks/claude-exec.lock
     participant A as Automation Timer
     participant W as Inbox Watcher
 
@@ -162,12 +162,12 @@ sequenceDiagram
     Note over A: Timer fires 07:30
     A->>L: flock -n (non-blocking)
     L-->>A: FAIL (lock held)
-    A->>A: happy notify "Skipped"
+    A->>A: happy notify -p "Skipped"
 
     Note over W: Inbox file synced
     W->>L: flock -n (non-blocking)
     L-->>W: FAIL (lock held)
-    W->>W: happy notify "Triage skipped"
+    W->>W: happy notify -p "Triage skipped"
 
     Note over I: User ends session
     I->>L: Release lock
@@ -178,7 +178,7 @@ sequenceDiagram
     L-->>W: Lock acquired
     activate W
     W->>W: claude --print "/triage all"
-    W->>W: happy notify "processed N file(s)"
+    W->>W: happy notify -p "processed N file(s)"
     W->>L: Release lock
     deactivate W
 
@@ -188,7 +188,7 @@ sequenceDiagram
     activate A
     A->>A: Generate summary
     A->>A: Atomic write to _system/summaries/
-    A->>A: happy notify "Success"
+    A->>A: happy notify -p "Success"
     A->>L: Release lock
     deactivate A
 ```
@@ -256,7 +256,7 @@ All services use `{{VAULT_DIR}}` template placeholders, stamped by `install.sh` 
 | Event continuity | No missed events | `since=LAST_ID` tracks position in event stream |
 | Startup behavior | Ignores history | Fetches latest event ID on start, only processes new events |
 | Debounce | 10s between triggers | Prevents rapid-fire triage on bulk syncs |
-| Concurrent safety | Single Claude process | flock on `/srv/locks/claude-exec.lock` |
+| Concurrent safety | Single Claude process | flock on `~/.second-brain/locks/claude-exec.lock` |
 | Graceful degradation | Skip on lock contention | Non-blocking flock; notifies and exits cleanly |
 | API failure recovery | Retry after 10s | curl failure triggers sleep + continue |
 
@@ -269,7 +269,7 @@ All services use `{{VAULT_DIR}}` template placeholders, stamped by `install.sh` 
 | Missed timer catchup | Run on next boot | `Persistent=true` fires missed timers |
 | Idempotency | One summary per day/week | Checks if output file already exists |
 | Atomic writes | No partial files | Write to `.tmp`, then `mv` to final path |
-| Failure notification | Always | `trap cleanup_on_error ERR` + `happy notify` |
+| Failure notification | Always | `trap cleanup_on_error ERR` + `happy notify -p` |
 
 ### Known Limitations
 
@@ -298,8 +298,8 @@ The inbox watcher outputs structured log lines:
 
 ```
 inbox-watcher: started
-  vault:    /home/ubuntu/second-brain
-  folder:   second-brain
+  vault:    ~/second-brain-vault
+  folder:   qekfe-h4e7x
   api:      http://localhost:8384
   debounce: 10s
   starting from event ID: 8280
@@ -311,7 +311,7 @@ inbox-triage: complete
 
 ### Happy Notifications
 
-All automation sends notifications via `happy notify`:
+All automation sends notifications via `happy notify -p`:
 
 | Event | Message |
 |-------|---------|
@@ -352,16 +352,16 @@ curl -sf -H "X-API-Key: YOUR_KEY" \
 
 ```bash
 # 1. Check lock contention — who holds it?
-fuser /srv/locks/claude-exec.lock
+fuser ~/.second-brain/locks/claude-exec.lock
 
 # 2. Verify triage script is executable
-ls -la /srv/scripts/inbox-triage.sh
+ls -la ~/.second-brain/scripts/inbox-triage.sh
 
 # 3. Check lock directory permissions
-ls -la /srv/locks/
+ls -la ~/.second-brain/locks/
 
 # 4. Manually test triage
-/srv/scripts/inbox-triage.sh
+~/.second-brain/scripts/inbox-triage.sh
 
 # 5. Verify Claude Code is available
 which claude && claude --version
@@ -381,7 +381,7 @@ journalctl -u happy-inbox-watcher.service -n 20 --no-pager
 #    - Syncthing not running: systemctl status syncthing@ubuntu.service
 
 # 3. Test script manually as ubuntu user
-sudo -u ubuntu /srv/scripts/inbox-watcher.sh
+sudo -u ubuntu ~/.second-brain/scripts/inbox-watcher.sh
 ```
 
 ### Verifying end-to-end flow
@@ -410,16 +410,5 @@ rm 0_inbox/test-triage.md
 ### Redeploying after changes
 
 ```bash
-# From the repo directory on the VM:
-sudo bash install.sh
-
-# Or to redeploy just the watcher:
-sudo cp scripts/inbox-watcher.sh /srv/scripts/
-sudo cp scripts/inbox-triage.sh /srv/scripts/
-sudo chmod +x /srv/scripts/inbox-*.sh
-sudo sed 's|{{VAULT_DIR}}|/home/ubuntu/second-brain|g' \
-    systemd/happy-inbox-watcher.service > /tmp/watcher.service
-sudo mv /tmp/watcher.service /etc/systemd/system/happy-inbox-watcher.service
-sudo systemctl daemon-reload
-sudo systemctl restart happy-inbox-watcher.service
+cd ~/second-brain && sudo ./install.sh
 ```

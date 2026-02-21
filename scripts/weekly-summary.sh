@@ -11,20 +11,20 @@ TEMP_FILE="${OUTPUT_FILE}.tmp"
 # --- Error trap: clean up temp file and notify on failure ---
 cleanup_on_error() {
     rm -f "$TEMP_FILE"
-    happy notify "Failed: weekly summary generation for ${WEEK}"
+    happy notify -p "Failed: weekly summary generation for ${WEEK}"
 }
 trap cleanup_on_error ERR
 
 # --- Idempotency check ---
 if [[ -f "$OUTPUT_FILE" ]]; then
-    happy notify "Skipped: weekly summary already exists for ${WEEK}"
+    happy notify -p "Skipped: weekly summary already exists for ${WEEK}"
     exit 0
 fi
 
 # --- Acquire lock (non-blocking) ---
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
-    happy notify "Skipped: interactive session active"
+    happy notify -p "Skipped: interactive session active"
     exit 0
 fi
 
@@ -59,7 +59,7 @@ Fill in each section based on what happened this week. Be concise but thorough."
 
 # --- Validate output ---
 if [[ ! -s "$TEMP_FILE" ]]; then
-    happy notify "Failed: weekly summary generation produced empty output for ${WEEK}"
+    happy notify -p "Failed: weekly summary generation produced empty output for ${WEEK}"
     rm -f "$TEMP_FILE"
     exit 1
 fi
@@ -68,4 +68,4 @@ fi
 mv "$TEMP_FILE" "$OUTPUT_FILE"
 
 # --- Notify success ---
-happy notify "Weekly summary written for ${WEEK}"
+happy notify -p "Weekly summary written for ${WEEK}"
