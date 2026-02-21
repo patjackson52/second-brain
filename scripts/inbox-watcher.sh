@@ -4,12 +4,12 @@
 # Runs as a long-lived systemd service.
 set -euo pipefail
 
-VAULT_DIR="${VAULT_DIR:-/home/ubuntu/second-brain}"
-LOCK_FILE="${LOCK_FILE:-/srv/locks/claude-exec.lock}"
+VAULT_DIR="${VAULT_DIR:-$HOME/second-brain-vault}"
+LOCK_FILE="${LOCK_FILE:-$HOME/.second-brain/locks/claude-exec.lock}"
 SYNCTHING_API="${SYNCTHING_API:-http://localhost:8384}"
-SYNCTHING_FOLDER="${SYNCTHING_FOLDER:-second-brain}"
+SYNCTHING_FOLDER="${SYNCTHING_FOLDER:-qekfe-h4e7x}"
 DEBOUNCE_SECONDS="${DEBOUNCE_SECONDS:-10}"
-TRIAGE_SCRIPT="${TRIAGE_SCRIPT:-/srv/scripts/inbox-triage.sh}"
+TRIAGE_SCRIPT="${TRIAGE_SCRIPT:-$HOME/.second-brain/scripts/inbox-triage.sh}"
 
 # --- Resolve API key from Syncthing config ---
 resolve_api_key() {

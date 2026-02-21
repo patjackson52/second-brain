@@ -5,7 +5,7 @@ set -euo pipefail
 # Uses flock-based concurrency control to prevent simultaneous
 # interactive and automated Claude sessions.
 
-LOCK_FILE="${CLAUDE_LOCK_FILE:-/srv/locks/claude-exec.lock}"
+LOCK_FILE="${CLAUDE_LOCK_FILE:-$HOME/.second-brain/locks/claude-exec.lock}"
 LOCK_DIR="$(dirname "$LOCK_FILE")"
 
 usage() {
@@ -16,7 +16,7 @@ usage() {
     echo "  --non-blocking  Attempt lock without blocking; skip if held"
     echo ""
     echo "Environment:"
-    echo "  CLAUDE_LOCK_FILE  Path to lock file (default: /srv/locks/claude-exec.lock)"
+    echo "  CLAUDE_LOCK_FILE  Path to lock file (default: ~/.second-brain/locks/claude-exec.lock)"
     exit 1
 }
 

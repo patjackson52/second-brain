@@ -28,10 +28,11 @@ RUN_HOME="${RUN_HOME:-$(eval echo "~$RUN_USER")}"
 
 # Core paths - all configurable
 VAULT_DIR="${VAULT_DIR:-$RUN_HOME/second-brain-vault}"
-SCRIPTS_DIR="${SCRIPTS_DIR:-$VAULT_DIR/.scripts}"
-LOCK_DIR="${LOCK_DIR:-$VAULT_DIR/.locks}"
-STATE_DIR="${STATE_DIR:-$VAULT_DIR/.state}"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+DATA_DIR="${DATA_DIR:-$RUN_HOME/.second-brain}"
+SCRIPTS_DIR="${SCRIPTS_DIR:-$DATA_DIR/scripts}"
+LOCK_DIR="${LOCK_DIR:-$DATA_DIR/locks}"
+STATE_DIR="${STATE_DIR:-$DATA_DIR/state}"
 
 # --- Pre-flight checks --------------------------------------------------------
 
@@ -46,6 +47,7 @@ echo "=============================================="
 echo ""
 echo "  Repo directory:    $REPO_DIR"
 echo "  Vault directory:   $VAULT_DIR"
+echo "  Data directory:    $DATA_DIR"
 echo "  Scripts directory: $SCRIPTS_DIR"
 echo "  Lock directory:    $LOCK_DIR"
 echo "  State directory:   $STATE_DIR"
@@ -64,12 +66,14 @@ timedatectl set-timezone America/Los_Angeles
 
 echo "  Creating directories..."
 mkdir -p "$VAULT_DIR"
+mkdir -p "$DATA_DIR"
 mkdir -p "$SCRIPTS_DIR"
 mkdir -p "$LOCK_DIR"
 mkdir -p "$STATE_DIR"
 
 # Set ownership to the run user
 chown -R "$RUN_USER:$RUN_USER" "$VAULT_DIR"
+chown -R "$RUN_USER:$RUN_USER" "$DATA_DIR"
 
 # Lock directory needs to be writable
 chmod 755 "$LOCK_DIR"
@@ -207,23 +211,23 @@ echo ""
 echo "--- [5/8] Python Environment Setup ---"
 
 # Create virtual environment if it doesn't exist
-if [[ ! -d "${VAULT_DIR}/.venv" ]]; then
+if [[ ! -d "${DATA_DIR}/venv" ]]; then
     echo "  Creating Python virtual environment..."
-    sudo -u "$RUN_USER" python3 -m venv "${VAULT_DIR}/.venv"
+    sudo -u "$RUN_USER" python3 -m venv "${DATA_DIR}/venv"
 else
     echo "  Virtual environment already exists."
 fi
 
 # Upgrade pip and install/upgrade dependencies
 echo "  Installing Python dependencies..."
-sudo -u "$RUN_USER" "${VAULT_DIR}/.venv/bin/pip" install --quiet --upgrade pip
-sudo -u "$RUN_USER" "${VAULT_DIR}/.venv/bin/pip" install --quiet -e "${REPO_DIR}"
+sudo -u "$RUN_USER" "${DATA_DIR}/venv/bin/pip" install --quiet --upgrade pip
+sudo -u "$RUN_USER" "${DATA_DIR}/venv/bin/pip" install --quiet -e "${REPO_DIR}"
 
 # Initialize database schema
 echo "  Initializing agents.db schema..."
 sudo -u "$RUN_USER" bash -c "
   cd '$REPO_DIR'
-  SECOND_BRAIN_STATE_DB='$STATE_DIR/agents.db' '${VAULT_DIR}/.venv/bin/python3' -c '
+  SECOND_BRAIN_STATE_DB='$STATE_DIR/agents.db' '${DATA_DIR}/venv/bin/python3' -c '
 import sys
 sys.path.insert(0, \".\")
 from state.db import get_connection, init_schema
@@ -243,7 +247,7 @@ echo ""
 
 echo "--- [6/8] Deploy Claude Code Slash Commands ---"
 
-COMMANDS_DIR="$VAULT_DIR/.claude/commands"
+COMMANDS_DIR="$DATA_DIR/claude/commands"
 mkdir -p "$COMMANDS_DIR"
 
 COMMANDS=(
@@ -264,7 +268,7 @@ for cmd in "${COMMANDS[@]}"; do
   echo "  Copied .claude/commands/$cmd -> $COMMANDS_DIR/$cmd"
 done
 
-chown -R "$RUN_USER:$RUN_USER" "$VAULT_DIR/.claude"
+chown -R "$RUN_USER:$RUN_USER" "$DATA_DIR/claude"
 
 echo "  Done."
 echo ""
@@ -337,11 +341,11 @@ done
 echo ""
 
 echo "  Python environment:"
-if [[ -f "${VAULT_DIR}/.venv/bin/python3" ]]; then
-  echo "    .venv — OK"
-  echo "    Python: $("${VAULT_DIR}/.venv/bin/python3" --version)"
+if [[ -f "${DATA_DIR}/venv/bin/python3" ]]; then
+  echo "    venv — OK"
+  echo "    Python: $("${DATA_DIR}/venv/bin/python3" --version)"
 else
-  echo "    .venv — MISSING"
+  echo "    venv — MISSING"
 fi
 echo ""
 
@@ -367,6 +371,7 @@ echo " Deployment Summary"
 echo "=============================================="
 echo ""
 echo "  Vault:     $VAULT_DIR"
+echo "  Data:      $DATA_DIR"
 echo "  Scripts:   $SCRIPTS_DIR"
 echo "  Locks:     $LOCK_DIR"
 echo "  State:     $STATE_DIR"

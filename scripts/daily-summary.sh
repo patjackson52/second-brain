@@ -3,8 +3,8 @@
 # Invoked by systemd timer daily at 07:30 America/Los_Angeles.
 set -euo pipefail
 
-VAULT_DIR="${VAULT_DIR:-/home/ubuntu/second-brain}"
-LOCK_FILE="${LOCK_FILE:-/srv/locks/claude-exec.lock}"
+VAULT_DIR="${VAULT_DIR:-$HOME/second-brain-vault}"
+LOCK_FILE="${LOCK_FILE:-$HOME/.second-brain/locks/claude-exec.lock}"
 TODAY="$(date +%Y-%m-%d)"
 OUTPUT_FILE="${VAULT_DIR}/_system/summaries/daily/auto/daily-summary-${TODAY}.md"
 TEMP_FILE="${OUTPUT_FILE}.tmp"

@@ -4,8 +4,8 @@
 # Respects the same lock as other automation to avoid conflicts.
 set -euo pipefail
 
-VAULT_DIR="${VAULT_DIR:-/home/ubuntu/second-brain}"
-LOCK_FILE="${LOCK_FILE:-/srv/locks/claude-exec.lock}"
+VAULT_DIR="${VAULT_DIR:-$HOME/second-brain-vault}"
+LOCK_FILE="${LOCK_FILE:-$HOME/.second-brain/locks/claude-exec.lock}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # --- Acquire lock (non-blocking). If interactive or other automation holds it, skip. ---
@@ -32,16 +32,17 @@ echo "inbox-triage: processing $FILE_COUNT file(s)"
 cd "$VAULT_DIR"
 
 # Activate virtual environment
-if [[ -f "${VAULT_DIR}/.venv/bin/activate" ]]; then
-    source "${VAULT_DIR}/.venv/bin/activate"
+DATA_DIR="${DATA_DIR:-$HOME/.second-brain}"
+if [[ -f "${DATA_DIR}/venv/bin/activate" ]]; then
+    source "${DATA_DIR}/venv/bin/activate"
 else
-    echo "inbox-triage: ERROR — .venv not found at ${VAULT_DIR}/.venv"
-    happy notify "Inbox triage failed: .venv not found" 2>/dev/null || true
+    echo "inbox-triage: ERROR — venv not found at ${DATA_DIR}/venv"
+    happy notify "Inbox triage failed: venv not found" 2>/dev/null || true
     exit 1
 fi
 
 # Run the Python triage agent
-python3 "${VAULT_DIR}/agents/run_triage.py" --all
+python3 -m agents.run_triage --all
 RESULT=$?
 
 case $RESULT in

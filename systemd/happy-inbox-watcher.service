@@ -13,6 +13,7 @@ Environment=SECOND_BRAIN_VAULT={{VAULT_DIR}}
 Environment=SECOND_BRAIN_STATE_DB={{STATE_DIR}}/agents.db
 Environment=LOCK_FILE={{LOCK_DIR}}/claude-exec.lock
 Environment=TRIAGE_SCRIPT={{SCRIPTS_DIR}}/inbox-triage.sh
+Environment=SYNCTHING_FOLDER=qekfe-h4e7x
 ExecStart={{SCRIPTS_DIR}}/inbox-watcher.sh
 Restart=always
 RestartSec=15
