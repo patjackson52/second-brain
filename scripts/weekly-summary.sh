@@ -1,71 +1,54 @@
 #!/usr/bin/env bash
+# weekly-summary.sh — Generate a weekly summary using PydanticAI agent.
+# Invoked by systemd timer Sundays at 08:00 America/Los_Angeles.
 set -euo pipefail
 
-# --- Configuration ---
-VAULT_DIR="${VAULT_DIR:-$HOME/second-brain-vault}"
-LOCK_FILE="${LOCK_FILE:-$HOME/.second-brain/locks/claude-exec.lock}"
+VAULT_DIR="${VAULT_DIR:-/home/ubuntu/second-brain}"
+LOCK_FILE="${LOCK_FILE:-/srv/locks/claude-exec.lock}"
 WEEK="$(date +%Y-W%V)"
 OUTPUT_FILE="${VAULT_DIR}/_system/summaries/weekly/auto/weekly-summary-${WEEK}.md"
-TEMP_FILE="${OUTPUT_FILE}.tmp"
 
-# --- Error trap: clean up temp file and notify on failure ---
+# Error trap: notify on failure.
 cleanup_on_error() {
-    rm -f "$TEMP_FILE"
-    happy notify -p "Failed: weekly summary generation for ${WEEK}"
+    happy notify -p "Failed: weekly summary generation for ${WEEK}" 2>/dev/null || true
 }
 trap cleanup_on_error ERR
 
-# --- Idempotency check ---
+# Idempotency check.
 if [[ -f "$OUTPUT_FILE" ]]; then
-    happy notify -p "Skipped: weekly summary already exists for ${WEEK}"
+    happy notify -p "Skipped: weekly summary already exists for ${WEEK}" 2>/dev/null || true
     exit 0
 fi
 
-# --- Acquire lock (non-blocking) ---
+# Acquire lock (non-blocking).
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
-    happy notify -p "Skipped: interactive session active"
+    happy notify -p "Skipped: interactive session active" 2>/dev/null || true
     exit 0
 fi
 
-# --- Ensure output directory exists ---
-mkdir -p "$(dirname "$OUTPUT_FILE")"
-
-# --- Generate summary using Claude ---
-claude --continue --print \
-    "Read the vault at ${VAULT_DIR} and review the past week's changes. \
-Look at daily summaries from the past week (in _system/summaries/daily/auto/) for context. \
-Generate a weekly summary in markdown with the following frontmatter and sections:
-
----
-type: weekly-summary
-week: ${WEEK}
-generated_by: happy-automation
-ai_generated: true
----
-
-## Highlights
-
-## Progress by theme
-
-## Open loops / TODO
-
-## Next actions
-
-## Questions for Patrick
-
-Fill in each section based on what happened this week. Be concise but thorough." \
-    > "$TEMP_FILE"
-
-# --- Validate output ---
-if [[ ! -s "$TEMP_FILE" ]]; then
-    happy notify -p "Failed: weekly summary generation produced empty output for ${WEEK}"
-    rm -f "$TEMP_FILE"
+# Activate virtual environment
+if [[ -f "${VAULT_DIR}/.venv/bin/activate" ]]; then
+    source "${VAULT_DIR}/.venv/bin/activate"
+else
+    echo "weekly-summary: ERROR — .venv not found at ${VAULT_DIR}/.venv"
+    happy notify -p "Weekly summary failed: .venv not found" 2>/dev/null || true
     exit 1
 fi
 
-# --- Atomic rename ---
-mv "$TEMP_FILE" "$OUTPUT_FILE"
+# Run PydanticAI summary agent
+cd "$VAULT_DIR"
+python3 "${VAULT_DIR}/agents/run_summary.py" weekly
+RESULT=$?
 
-# --- Notify success ---
-happy notify -p "Weekly summary written for ${WEEK}"
+case $RESULT in
+    0)
+        echo "weekly-summary: complete"
+        happy notify -p "Weekly summary written for ${WEEK}" 2>/dev/null || true
+        ;;
+    *)
+        echo "weekly-summary: failed (exit code $RESULT)"
+        happy notify -p "Weekly summary failed for ${WEEK}" 2>/dev/null || true
+        exit 1
+        ;;
+esac
