@@ -62,6 +62,23 @@ def tmp_db(tmp_path):
 
 
 @pytest.fixture
+def tmp_vault_with_recent_files(tmp_vault):
+    """Temp vault with some recently modified files for summary testing."""
+    # Create some recent files
+    (tmp_vault / "0_inbox" / "new-note.md").write_text(
+        "---\ncaptured_at: 2026-02-21\n---\n# New Note\n\nSome content."
+    )
+    (tmp_vault / "1_projects" / "active" / "test-project.md").write_text(
+        "# Test Project\n\nStatus: active\n"
+    )
+    # Create summaries directory
+    summ_dir = tmp_vault / "_system" / "summaries" / "daily" / "auto"
+    summ_dir.mkdir(parents=True)
+    (tmp_vault / "_system" / "summaries" / "weekly" / "auto").mkdir(parents=True)
+    yield tmp_vault
+
+
+@pytest.fixture
 def sample_inbox_file(tmp_vault):
     """Create a sample inbox markdown file."""
     content = (
