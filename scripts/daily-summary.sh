@@ -3,8 +3,9 @@
 # Invoked by systemd timer daily at 07:30 America/Los_Angeles.
 set -euo pipefail
 
-VAULT_DIR="${VAULT_DIR:-/home/ubuntu/second-brain}"
-LOCK_FILE="${LOCK_FILE:-/srv/locks/claude-exec.lock}"
+VAULT_DIR="${VAULT_DIR:-/home/ubuntu/second-brain-vault}"
+CODE_DIR="${CODE_DIR:-/home/ubuntu/second-brain}"
+LOCK_FILE="${LOCK_FILE:-/home/ubuntu/.second-brain/locks/claude-exec.lock}"
 TODAY="$(date +%Y-%m-%d)"
 OUTPUT_FILE="${VAULT_DIR}/_system/summaries/daily/auto/daily-summary-${TODAY}.md"
 
@@ -28,17 +29,17 @@ if ! flock -n 9; then
 fi
 
 # Activate virtual environment
-if [[ -f "${VAULT_DIR}/.venv/bin/activate" ]]; then
-    source "${VAULT_DIR}/.venv/bin/activate"
+if [[ -f "${CODE_DIR}/.venv/bin/activate" ]]; then
+    source "${CODE_DIR}/.venv/bin/activate"
 else
-    echo "daily-summary: ERROR — .venv not found at ${VAULT_DIR}/.venv"
+    echo "daily-summary: ERROR — .venv not found at ${CODE_DIR}/.venv"
     happy notify -p "Daily summary failed: .venv not found" 2>/dev/null || true
     exit 1
 fi
 
 # Run PydanticAI summary agent
-cd "$VAULT_DIR"
-python3 "${VAULT_DIR}/agents/run_summary.py" daily
+cd "$CODE_DIR"
+python3 "${CODE_DIR}/agents/run_summary.py" daily
 RESULT=$?
 
 case $RESULT in
