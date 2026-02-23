@@ -268,7 +268,7 @@ for cmd in "${COMMANDS[@]}"; do
     continue
   fi
   cp "$src" "$COMMANDS_DIR/$cmd"
-  echo "  Copied .claude/commands/$cmd -> $COMMANDS_DIR/$cmd"
+  echo "  Copied .claude-plugin/commands/$cmd -> $COMMANDS_DIR/$cmd"
 done
 
 chown -R "$RUN_USER:$RUN_USER" "$DATA_DIR/claude"
