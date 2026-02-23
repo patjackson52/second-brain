@@ -256,10 +256,13 @@ COMMANDS=(
   "search.md"
   "daily.md"
   "weekly.md"
+  "project.md"
+  "area.md"
+  "person.md"
 )
 
 for cmd in "${COMMANDS[@]}"; do
-  src="$REPO_DIR/.claude/commands/$cmd"
+  src="$REPO_DIR/.claude-plugin/commands/$cmd"
   if [[ ! -f "$src" ]]; then
     echo "  WARNING: $src not found, skipping."
     continue
