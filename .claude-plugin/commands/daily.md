@@ -1,3 +1,15 @@
+---
+description: Generate a daily summary of vault activity
+argument-hint: [date in YYYY-MM-DD format]
+allowed-tools: [Read, Write, Bash, Glob, Grep]
+---
+
+## Vault Discovery
+
+1. Check `$VAULT_DIR` environment variable for vault path
+2. If not set, use `~/second-brain-vault`
+3. Verify the vault exists by checking for `0_inbox/` directory
+
 Generate a daily summary for the second-brain vault.
 
 ## Instructions

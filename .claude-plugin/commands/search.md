@@ -1,3 +1,15 @@
+---
+description: Full-text search across the entire knowledge base
+argument-hint: <search query>
+allowed-tools: [Read, Glob, Grep]
+---
+
+## Vault Discovery
+
+1. Check `$VAULT_DIR` environment variable for vault path
+2. If not set, use `~/second-brain-vault`
+3. Verify the vault exists by checking for `0_inbox/` directory
+
 Full-text search across the entire second-brain knowledge base.
 
 ## Instructions

@@ -1,3 +1,15 @@
+---
+description: Classify and route inbox notes using PARA methodology
+argument-hint: [file path | all]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+---
+
+## Vault Discovery
+
+1. Check `$VAULT_DIR` environment variable for vault path
+2. If not set, use `~/second-brain-vault`
+3. Verify the vault exists by checking for `0_inbox/` directory
+
 Classify and route notes from the inbox using the PARA methodology.
 
 ## References

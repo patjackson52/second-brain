@@ -1,3 +1,15 @@
+---
+description: Create a new note in the inbox from quick capture
+argument-hint: <content to capture>
+allowed-tools: [Read, Write, Bash, Glob, Grep]
+---
+
+## Vault Discovery
+
+1. Check `$VAULT_DIR` environment variable for vault path
+2. If not set, use `~/second-brain-vault`
+3. Verify the vault exists by checking for `0_inbox/` directory
+
 Create a new note in the inbox from the user's input.
 
 ## Instructions

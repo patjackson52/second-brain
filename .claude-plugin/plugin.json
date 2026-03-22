@@ -1,0 +1,8 @@
+{
+  "name": "second-brain",
+  "description": "Personal knowledge management using PARA methodology",
+  "version": "1.0.0",
+  "author": {
+    "name": "Patrick Jackson"
+  }
+}
